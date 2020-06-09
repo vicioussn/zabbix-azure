@@ -1,0 +1,1 @@
+pwsh /usr/lib/zabbix/externalscripts/get.azure.ai.log.ps1 $1 /usr/lib/zabbix/externalscripts/

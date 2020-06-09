@@ -1,0 +1,1 @@
+pwsh /usr/lib/zabbix/externalscripts/get.azure.metrics.values.ps1 $1 /usr/lib/zabbix/externalscripts/

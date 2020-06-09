@@ -1,0 +1,43 @@
+mode: Mainline
+assembly-versioning-scheme: MajorMinorPatch
+next-version: 1.0
+increment: Minor
+commit-date-format: 'yyyy-MM-dd'
+commit-message-incrementing: Enabled
+assembly-informational-format: '{Major}.{Minor}.{Patch}+{CommitsSinceVersionSource}.{BranchName}.{ShortSha}'
+branches:
+  master:
+    tag: ''
+    increment: Minor
+    prevent-increment-of-merged-branch-version: true
+    is-release-branch: true
+    is-source-branch-for: ['feature','plat','it']
+  feature:
+    regex: Feature-
+    tag: ''
+    increment: Minor
+    #prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    tracks-release-branches: true
+    is-release-branch: false
+    source-branches: ['master']
+  plat:
+    regex: PLAT-
+    tag: ''
+    increment: Minor
+    #prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    tracks-release-branches: true
+    is-release-branch: false
+    source-branches: ['master']
+  it:
+    regex: IT-
+    tag: ''
+    increment: Minor
+    #prevent-increment-of-merged-branch-version: false
+    track-merge-target: false
+    tracks-release-branches: true
+    is-release-branch: false
+    source-branches: ['master']
+ignore:
+  sha: []

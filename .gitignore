@@ -1,0 +1,6 @@
+.vs/
+*.tar.gz
+*.tar.gz.filepart
+*/imports/
+*/logs/
+/development/azure.json
