@@ -2,7 +2,7 @@ function Get-ZaAzureResourceApiParameters {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights")]
+        [ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase")]
         [string]$resourceType
     );
 
@@ -35,13 +35,18 @@ function Get-ZaAzureResourceApiParameters {
             $resourceProviderExtension = "components";
             $resourceProviderApiVersion = "2015-05-01";
         }
+        "sqlDatabase" {
+            $resourceProvider = "Microsoft.Sql"; 
+            $resourceProviderExtension = "servers/databases";
+            $resourceProviderApiVersion = "2014-04-01";
+        }
         # "^ApiApp$" { $ResourceProviderFilter = { $_.kind -eq "api" } }
         # "^App$" { $ResourceProviderFilter = { $_.kind -eq "app" } }
-        # "^StorageAccount$" {
-        #     $ResourceProvider = "Microsoft.Storage"; 
-        #     $ResourceProviderExtension = "storageAccounts";
-        #     $ResourceProviderApiVersion = "2017-06-01"
-        # }
+        "storageAccount" {
+            $ResourceProvider = "Microsoft.Storage"; 
+            $ResourceProviderExtension = "storageAccounts";
+            $ResourceProviderApiVersion = "2017-06-01"
+        }
         "serviceBus" {
             $ResourceProvider = "Microsoft.ServiceBus"; 
             $ResourceProviderExtension = "namespaces";

@@ -4,12 +4,14 @@ function Get-ZaAzureMonitorMetrics {
         [Parameter(Mandatory = $true)][string]$workingDir,
         [Parameter(Mandatory = $true)][string]$resourceGroup,
         [Parameter(Mandatory = $true)][string]$subscriptionId,
-        [Parameter(Mandatory = $true)][ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights")][string]$resourceType,
+        [Parameter(Mandatory = $true)][ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase")][string]$resourceType,
         [Parameter(Mandatory = $false)][string]$metricName
     );
 
-    $azureToken = Get-ZaAzureMonitorAuthorizationSignature -workingDir $workingDir;
+    # This will be used to store resources discovered.
+    $resources = @();
 
+    $azureToken = Get-ZaAzureMonitorAuthorizationSignature -workingDir $workingDir;
 
     Write-Verbose "Resolving Azure resource API parameters for 'resourceType' = '$resourceType'.";
     $resourceApiParams = Get-ZaAzureResourceApiParameters -resourceType $resourceType;
@@ -17,19 +19,59 @@ function Get-ZaAzureMonitorMetrics {
 
 
     Write-Verbose "Building search path for resources.";
-    $searchPath = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}" -f $subscriptionId, $resourceGroup, $resourceApiParams.provider, $resourceApiParams.providerExtension;
-    Write-Verbose "searchPath = '$searchPath'.";
+    if ($resourceApiParams.providerExtension -match ".*\/.*") # Checking for nested resources like 'Microsoft.Sql/servers/databases'
+    {
+        Write-Verbose "Provider extension '$($resourceApiParams.providerExtension)' is nested.";
 
+        $parentProviderExtension = $resourceApiParams.providerExtension.Split("/")[0];
+        $childProviderExtension = $resourceApiParams.providerExtension.Split("/")[1];
 
-    $restParameters = @{
-        authHeader = $azureToken.Authorization;
-        queryPath = $searchPath;
-        apiVersion = $resourceApiParams.providerApiVersion;
-    };
+        Write-Verbose "Looking for resources with parent provider extension '$parentProviderExtension'.";
+        $searchPath = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}" -f $subscriptionId, $resourceGroup, $resourceApiParams.provider, $parentProviderExtension;
+        Write-Verbose "searchPath = '$searchPath'.";
 
+        $restParameters = @{
+            authHeader = $azureToken.Authorization;
+            queryPath = $searchPath;
+            apiVersion = $resourceApiParams.providerApiVersion;
+        };
 
-    Write-Verbose "Getting resources list using REST request.`n";
-    [array]$resources = Invoke-ZaAzureMonitorApiQuery @restParameters | Select-Object -ExpandProperty value;
+        Write-Verbose "Getting resources list using REST request.`n";
+        [array]$parentResources = Invoke-ZaAzureMonitorApiQuery @restParameters | Select-Object -ExpandProperty value;
+        Write-Verbose "Parent resources:";
+        Write-Verbose $($parentResources.id | Out-String);
+
+        foreach ($parentResource in $parentResources)
+        {
+            Write-Verbose "Looking for resources with parent provider extension '$childProviderExtension'.";
+            $searchPath = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}/{4}/{5}" -f $subscriptionId, $resourceGroup, $resourceApiParams.provider, $parentProviderExtension, $parentResource.name, $childProviderExtension;
+            Write-Verbose "searchPath = '$searchPath'.";
+
+            $restParameters = @{
+                authHeader = $azureToken.Authorization;
+                queryPath = $searchPath;
+                apiVersion = $resourceApiParams.providerApiVersion;
+            };
+    
+            Write-Verbose "Getting resources list using REST request.`n";
+            [array]$resources += Invoke-ZaAzureMonitorApiQuery @restParameters | Select-Object -ExpandProperty value;
+        }
+    }
+    else
+    {
+        $searchPath = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}" -f $subscriptionId, $resourceGroup, $resourceApiParams.provider, $resourceApiParams.providerExtension;
+        Write-Verbose "searchPath = '$searchPath'.";
+
+        $restParameters = @{
+            authHeader = $azureToken.Authorization;
+            queryPath = $searchPath;
+            apiVersion = $resourceApiParams.providerApiVersion;
+        };
+    
+    
+        Write-Verbose "Getting resources list using REST request.`n";
+        [array]$resources = Invoke-ZaAzureMonitorApiQuery @restParameters | Select-Object -ExpandProperty value;
+    }
 
 
     if ($resourceApiParams.providerKind)
@@ -96,6 +138,7 @@ function Get-ZaAzureMonitorMetrics {
                     "{#METRICDISPLAYNAME}" = $metric.name.localizedValue;
                     "{#TIMEGRAIN}" = $metric.metricAvailabilities[0].timeGrain;
                     "{#PRIMARYAGGREGATIONTYPE}" = $metric.primaryAggregationType;
+                    "{#PARENTRESOURCENAME}" = $resource.id.Split("/")[8];
                 };
             }
         }

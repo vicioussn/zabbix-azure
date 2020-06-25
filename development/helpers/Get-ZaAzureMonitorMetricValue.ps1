@@ -35,17 +35,41 @@ function Get-ZaAzureMonitorMetricValue {
     # /providers/Microsoft.Storage/storageAccounts/ContosoStorage/providers/microsoft.insights
     # /metrics?metricnames=Transactions&timespan=2018-03-01T02:00:00Z/2018-03-01T02:05:00Z&`$filter=${filter}&interval=PT1M&aggregation=Total&top=3&orderby=Total desc&api-version=2018-01-01
     Write-Verbose "Building URI to pull metrics from Azure Monitor.";
-    $uri = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}/{4}/providers/microsoft.insights/metrics?timespan={5}&interval={6}&api-version={7}&metricnames={8}&aggregation={9}" -f `
-        $subscriptionId, `                                      # 0
-        $resourceGroupName, `                                   # 1
-        $resourceApiParams.provider, `                          # 2
-        $resourceApiParams.providerExtension, `                 # 3
-        $resourceName, `                                        # 4
-        "$startTime/$endTime", `                                # 5
-        $timeGrain, `                                           # 6
-        "2018-01-01", `                                         # 7
-        $metricName, `                                          # 8
-        $aggregation;                                           # 9
+    if ($resourceApiParams.providerExtension -match ".*\/.*")
+    {
+        $parentProviderExtension = $resourceApiParams.providerExtension.Split("/")[0];
+        $childProviderExtension = $resourceApiParams.providerExtension.Split("/")[1];
+        $parentResourceName = $resourceName.Split("/")[0];
+        $childResourceName = $resourceName.Split("/")[1];
+
+        $uri = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}/{4}/{5}/{6}/providers/microsoft.insights/metrics?timespan={7}&interval={8}&api-version={9}&metricnames={10}&aggregation={11}" -f `
+            $subscriptionId, `                                      # 0
+            $resourceGroupName, `                                   # 1
+            $resourceApiParams.provider, `                          # 2
+            $parentProviderExtension, `                             # 3
+            $parentResourceName, `                                  # 4
+            $childProviderExtension, `                              # 5
+            $childResourceName, `                                   # 6
+            "$startTime/$endTime", `                                # 7
+            $timeGrain, `                                           # 8
+            "2018-01-01", `                                         # 9
+            $metricName, `                                          # 10
+            $aggregation;                                           # 11
+    }
+    else
+    {
+        $uri = "https://management.azure.com/subscriptions/{0}/resourceGroups/{1}/providers/{2}/{3}/{4}/providers/microsoft.insights/metrics?timespan={5}&interval={6}&api-version={7}&metricnames={8}&aggregation={9}" -f `
+            $subscriptionId, `                                      # 0
+            $resourceGroupName, `                                   # 1
+            $resourceApiParams.provider, `                          # 2
+            $resourceApiParams.providerExtension, `                 # 3
+            $resourceName, `                                        # 4
+            "$startTime/$endTime", `                                # 5
+            $timeGrain, `                                           # 6
+            "2018-01-01", `                                         # 7
+            $metricName, `                                          # 8
+            $aggregation;                                           # 9
+    }
     Write-Verbose "URI: $uri";
 
     
