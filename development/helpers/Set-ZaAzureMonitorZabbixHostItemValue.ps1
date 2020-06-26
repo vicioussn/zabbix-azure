@@ -121,11 +121,11 @@ function Set-ZaAzureMonitorZabbixHostItemValue {
         {
             if ($isFirstline)
             {
-                $line = '"{0}" {1} "{2}" "{3}"' -f $item.host, $item.key, $item.timestamp, $item.value;
+                $line = '"{0}" "{1}" "{2}" "{3}"' -f $item.host, $item.key, $item.timestamp, $item.value;
                 $stream.WriteLine($line);
                 $isFirstline = $false;
             }
-            $line = '"{0}" {1} "{2}" "{3}"' -f $item.host, $item.key, $item.timestamp, $item.value;
+            $line = '"{0}" "{1}" "{2}" "{3}"' -f $item.host, $item.key, $item.timestamp, $item.value;
             $stream.WriteLine($line);
         }
         Write-Verbose "Finished write to file.";

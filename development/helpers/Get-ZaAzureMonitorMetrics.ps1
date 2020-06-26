@@ -4,7 +4,7 @@ function Get-ZaAzureMonitorMetrics {
         [Parameter(Mandatory = $true)][string]$workingDir,
         [Parameter(Mandatory = $true)][string]$resourceGroup,
         [Parameter(Mandatory = $true)][string]$subscriptionId,
-        [Parameter(Mandatory = $true)][ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase")][string]$resourceType,
+        [Parameter(Mandatory = $true)][ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase","vm")][string]$resourceType,
         [Parameter(Mandatory = $false)][string]$metricName
     );
 

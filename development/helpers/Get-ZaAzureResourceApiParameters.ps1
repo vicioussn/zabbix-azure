@@ -2,7 +2,7 @@ function Get-ZaAzureResourceApiParameters {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase")]
+        [ValidateSet("appServicePlan","webApp","functionApp","storageAccount","serviceBus","analysisServices","appInsights","sqlDatabase","vm")]
         [string]$resourceType
     );
 
@@ -51,6 +51,11 @@ function Get-ZaAzureResourceApiParameters {
             $ResourceProvider = "Microsoft.ServiceBus"; 
             $ResourceProviderExtension = "namespaces";
             $ResourceProviderApiVersion = "2017-04-01"
+        }
+        "vm" {
+            $ResourceProvider = "Microsoft.Compute"; 
+            $ResourceProviderExtension = "virtualMachines";
+            $ResourceProviderApiVersion = "2020-06-01"
         }
         # "^CosmosDBAccount$" {
         #     $ResourceProvider = "Microsoft.DocumentDB"; 
