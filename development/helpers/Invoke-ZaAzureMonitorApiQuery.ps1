@@ -45,7 +45,7 @@ function Invoke-ZaAzureMonitorApiQuery {
         {
             if ($retry -gt $retries)
             {
-                Write-Error "Error while making REST request to Azure API. $retries retries were made.";
+                Write-Verbose "Error while making REST request to Azure API. $retries retries were made.";
                 if ($zabbixHostName)
                 {
                     Remove-ZaMonitorScriptLockFile -zabbixHostName $zabbixHostName;
