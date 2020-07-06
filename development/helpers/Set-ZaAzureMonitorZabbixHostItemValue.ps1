@@ -50,6 +50,7 @@ function Set-ZaAzureMonitorZabbixHostItemValue {
         $itemLastValue = Get-ZaZabbixItemHistory -auth $zabbixToken -url $zabbixUrl -itemId $zabbixHostItem.itemid;
         if ($itemLastValue)
         {
+            Write-Verbose "Latest timestamp for the item: $($itemLastValue[0].clock).";
             $startTime = $($itemLastValue[0].clock | ConvertTo-DateTime).ToString("yyyy-MM-ddTHH:mm:ssZ");
         }
         else
@@ -58,6 +59,7 @@ function Set-ZaAzureMonitorZabbixHostItemValue {
             $startTime = $(Get-Date).ToUniversalTime().AddDays(-3).ToString("yyyy-MM-ddTHH:mm:ssZ");
         }
 
+        Write-Verbose "Current Epoch time (-3 minutes): $($(Get-Date).AddMinutes(-3).ToUniversalTime() | ConvertTo-EpochTime)."
         $now = $(Get-Date).AddMinutes(-3).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
         Write-Verbose "Timespan = '$startTime - $now'.";
         # /Getting time span to be used in Azure Monitor query
